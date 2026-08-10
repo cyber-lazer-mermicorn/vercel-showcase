@@ -1,5 +1,5 @@
 # Vercel AI Accelerator
-## Built by Cherry Barton | AI Solutions Engineer
+## Built by Cherry Shanaley (Chan) | AI Solutions Engineer
 
 A showcase of advanced Vercel features: Edge Functions, ISR, AI SDK, and real-time capabilities.
 
@@ -114,6 +114,6 @@ I've deployed 9 production platforms on Vercel. This repo showcases the advanced
 
 ## Contact
 
-**Cherry Barton** — cherry@lazermermicorn.com
+**Cherry Shanaley (Chan)** — cyber.lazer.mermicorn@gmail.com
 
 *AI Solutions Engineer | 9 Production Platforms | Vercel Power User*
