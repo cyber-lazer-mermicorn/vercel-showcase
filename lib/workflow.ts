@@ -94,3 +94,99 @@ export async function executeConditional(
     throw new Error(`Execute conditional error: ${error?.message || 'Unknown error'}`);
   }
 }
+
+// Retry with backoff
+export async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  baseDelay = 1000
+): Promise<T> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError || new Error('Retry failed');
+}
+
+// Rate limiter
+export class RateLimiter {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(private maxTokens: number, private refillRate: number) {
+    this.tokens = maxTokens;
+    this.lastRefill = Date.now();
+  }
+
+  async acquire(): Promise<void> {
+    this.refill();
+    if (this.tokens <= 0) {
+      const waitTime = this.refillRate - (Date.now() - this.lastRefill);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      this.refill();
+    }
+    this.tokens--;
+  }
+
+  private refill(): void {
+    const now = Date.now();
+    const elapsed = now - this.lastRefill;
+    const tokensToAdd = Math.floor(elapsed / this.refillRate);
+    this.tokens = Math.min(this.maxTokens, this.tokens + tokensToAdd);
+    this.lastRefill = now;
+  }
+}
+
+// Circuit breaker
+export class CircuitBreaker {
+  private failures = 0;
+  private lastFailure = 0;
+  private state: 'closed' | 'open' | 'half-open' = 'closed';
+
+  constructor(
+    private failureThreshold: number,
+    private recoveryTimeout: number
+  ) {}
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') {
+      if (Date.now() - this.lastFailure > this.recoveryTimeout) {
+        this.state = 'half-open';
+      } else {
+        throw new Error('Circuit breaker is open');
+      }
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  private onSuccess(): void {
+    this.failures = 0;
+    this.state = 'closed';
+  }
+
+  private onFailure(): void {
+    this.failures++;
+    this.lastFailure = Date.now();
+    if (this.failures >= this.failureThreshold) {
+      this.state = 'open';
+    }
+  }
+}
