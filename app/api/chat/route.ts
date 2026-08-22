@@ -1,9 +1,9 @@
 import { streamText, tool } from 'ai';
 import { z } from 'zod';
 import { getModel } from '@/lib/models';
-import { createSandbox } from '@vercel/sandbox';
+import { Sandbox } from '@vercel/sandbox';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
@@ -30,13 +30,31 @@ Be concise, accurate, and showcase the technology authentically.`,
           language: z.enum(['typescript', 'python']).describe('Programming language'),
         }),
         execute: async ({ code, language }) => {
+          let sandbox: Sandbox | undefined;
           try {
-            const sandbox = await createSandbox({ template: language === 'python' ? 'python' : 'node' });
-            const result = await sandbox.runCode(code);
-            await sandbox.kill();
-            return { output: result.text, language, success: true };
-          } catch (err: any) {
-            return { output: err?.message ?? 'Execution failed', language, success: false };
+            sandbox = await Sandbox.create({
+              runtime: language === 'python' ? 'python3.13' : 'node22',
+              timeout: 30_000,
+            });
+            const command = await sandbox.runCommand(
+              language === 'python' ? 'python3' : 'node',
+              language === 'python' ? ['-c', code] : ['-e', code]
+            );
+            const output = await command.output('both');
+            return {
+              output,
+              language,
+              success: command.exitCode === 0,
+              exitCode: command.exitCode,
+            };
+          } catch (error: unknown) {
+            return {
+              output: error instanceof Error ? error.message : 'Execution failed',
+              language,
+              success: false,
+            };
+          } finally {
+            if (sandbox) await sandbox.stop().catch(() => undefined);
           }
         },
       }),

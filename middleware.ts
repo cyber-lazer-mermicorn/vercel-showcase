@@ -42,7 +42,11 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-edge-time', new Date().toISOString());
 
   // Rate limiting
-  const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown';
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const ip =
+    forwardedFor?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
   const allowed = await checkRateLimit(ip);
   if (!allowed) {
     return new NextResponse(JSON.stringify({ error: 'Rate limit exceeded' }), {
