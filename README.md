@@ -1,119 +1,45 @@
-# Vercel AI Accelerator
-## Built by Cherry Shanaley (Chan) | AI Solutions Engineer
+# Vercel Full-Stack AI Showcase
 
-A showcase of advanced Vercel features: Edge Functions, ISR, AI SDK, and real-time capabilities.
+**What this proves:** Deployable full-stack AI application on Vercel — AI SDK
+streaming, edge vs serverless runtime decisions, typed API routes, and
+environment-based configuration. Built to deploy, not just run locally.
 
-**Live:** https://vercel-showcase.lazermermicorn.com
-
----
-
-## What This Demonstrates
-
-### Edge Runtime
-- Edge Functions for sub-50ms cold starts
-- Edge Middleware for auth/routing
-- Edge Config for feature flags
-
-### AI SDK Integration
-- Vercel AI SDK with streaming responses
-- Multi-provider fallback (OpenAI → Groq)
-- Structured output with zod validation
-
-### Performance
-- Incremental Static Regeneration (ISR)
-- Image optimization with next/image
-- Font optimization with next/font
-
-### DX Features
-- TypeScript throughout
-- GitHub integration with preview deploys
-- Vercel Analytics + Speed Insights
+**Portfolio:** [cyber-lazer-mermicorn](https://github.com/cyber-lazer-mermicorn) · Cherry Shanaley
 
 ---
 
-## Tech Stack
+## Key patterns
 
-- **Framework:** Next.js 14 (App Router)
-- **Runtime:** Edge Runtime
-- **AI:** Vercel AI SDK + OpenAI/Groq
-- **Database:** Vercel Postgres
-- **Cache:** Vercel KV (Redis)
-- **Styling:** Tailwind CSS
-- **Deployment:** Vercel (Edge)
+| Pattern | What it proves |
+|---|---|
+| AI SDK streaming | `streamText` with `useChat` hook — chunked, not buffered |
+| Edge runtime | `export const runtime = 'edge'` on latency-critical routes |
+| Serverless runtime | Node.js runtime for routes needing full Node APIs |
+| Typed API routes | `NextRequest` / `NextResponse` with Zod body validation |
+| Env configuration | `NEXT_PUBLIC_*` vs server-only keys — no leakage |
 
----
-
-## Getting Started
+## Run locally
 
 ```bash
-# Install dependencies
 npm install
-
-# Set up environment
-cp .env.example .env.local
-# Add your API keys
-
-# Run development
-npm run dev
-
-# Deploy to Vercel
-vercel --prod
+cp .env.example .env.local   # add OPENAI_API_KEY
+npm run dev                  # http://localhost:3000
+npm test
 ```
 
----
+## Deploy to Vercel
 
-## Features
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cyber-lazer-mermicorn/vercel-showcase)
 
-### 1. AI Chat with Streaming
-Real-time streaming responses with the Vercel AI SDK.
+Add `OPENAI_API_KEY` in the Vercel environment variable settings.
 
-### 2. ISR Data Fetching
-Static generation with automatic revalidation.
+## Evidence
 
-### 3. Edge Middleware
-Authentication and routing at the edge.
+- Streaming route returns chunks in real time — visible in browser network tab
+- Edge route cold-start is measurably faster than serverless — logged in Vercel dashboard
+- API routes reject malformed bodies with typed error responses
 
-### 4. Real-time Updates
-WebSocket connections for live data.
+## Honest scope
 
-### 5. Image Optimization
-Automatic image optimization and lazy loading.
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│                  Vercel                      │
-├─────────────────────────────────────────────┤
-│  Edge Middleware (Auth, Routing)             │
-├─────────────────────────────────────────────┤
-│  Edge Functions (< 50ms cold start)         │
-├─────────────────────────────────────────────┤
-│  ISR Pages (Static + Revalidation)          │
-├─────────────────────────────────────────────┤
-│  AI SDK (Streaming, Multi-provider)         │
-├─────────────────────────────────────────────┤
-│  Vercel Postgres + KV (Cache)               │
-└─────────────────────────────────────────────┘
-```
-
----
-
-## Why I Built This
-
-I've deployed 9 production platforms on Vercel. This repo showcases the advanced features I use daily:
-
-- **Edge Functions** for performance
-- **AI SDK** for streaming responses
-- **ISR** for dynamic content
-- **Analytics** for monitoring
-
----
-
-## Contact
-
-**Cherry Shanaley (Chan)** — cyber.lazer.mermicorn@gmail.com
-
-*AI Solutions Engineer | 9 Production Platforms | Vercel Power User*
+Showcase-grade: deployment patterns are correct. No production auth, database,
+or multi-region configuration included.
